@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fehler- und Problemmeldung</title>
+  <meta name="robots" content="noindex, nofollow">
+  <style>
+    :root {
+      --bg-top: #e7e0d7;
+      --bg-bottom: #d7cfc4;
+      --card: #525b63;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-shadow: 0 24px 48px rgba(35, 37, 39, 0.24);
+      --text: #f5f7fa;
+      --muted: #d6dde4;
+      --input-bg: #f7f8fa;
+      --input-border: #d9dee3;
+      --button: #2f80c8;
+      --button-hover: #276fae;
+      --button-disabled: #7b9ab5;
+      --success: #8ee19d;
+      --error: #ffb3b3;
+      --focus: rgba(114, 193, 255, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at top, rgba(255, 255, 255, 0.55), transparent 34%),
+        linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+      color: var(--text);
+      font-family: "Aptos", "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    .panel {
+      width: min(100%, 420px);
+      background: linear-gradient(180deg, #58616b 0%, var(--card) 100%);
+      border: 1px solid var(--card-border);
+      border-radius: 4px;
+      box-shadow: var(--card-shadow);
+      padding: 30px;
+    }
+
+    .brand {
+      display: grid;
+      place-items: center;
+      margin-bottom: 22px;
+    }
+
+    .brand-icon {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background: #f5f5f5;
+      box-shadow: inset 0 -6px 12px rgba(0, 0, 0, 0.08);
+      display: grid;
+      place-items: center;
+    }
+
+    .brand-icon svg {
+      width: 54px;
+      height: 54px;
+    }
+
+    h1 {
+      margin: 14px 0 6px;
+      text-align: center;
+      font-size: 1.55rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .subtitle {
+      margin: 0 0 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.97rem;
+      line-height: 1.45;
+    }
+
+    form {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.92rem;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--input-border);
+      border-radius: 4px;
+      background: var(--input-bg);
+      color: #39414a;
+      padding: 12px 14px;
+      transition: box-shadow 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+    }
+
+    textarea {
+      min-height: 132px;
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #83c3f3;
+      box-shadow: 0 0 0 4px var(--focus);
+      transform: translateY(-1px);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .actions {
+      margin-top: 6px;
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      border: 0;
+      border-radius: 4px;
+      background: linear-gradient(180deg, #3b86ca 0%, var(--button) 100%);
+      color: #fff;
+      padding: 14px 18px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
+    }
+
+    button[type="submit"]:hover:not(:disabled),
+    button[type="submit"]:focus-visible:not(:disabled) {
+      background: linear-gradient(180deg, #3480c4 0%, var(--button-hover) 100%);
+      transform: translateY(-1px);
+    }
+
+    button[type="submit"]:disabled {
+      background: var(--button-disabled);
+      cursor: wait;
+      opacity: 0.9;
+    }
+
+    .status {
+      min-height: 24px;
+      margin-top: 8px;
+      font-size: 0.92rem;
+      line-height: 1.4;
+    }
+
+    .status[data-state="success"] {
+      color: var(--success);
+    }
+
+    .status[data-state="error"] {
+      color: var(--error);
+    }
+
+    .hint {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.45;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* ELW-Gate                                                            */
+    /* ------------------------------------------------------------------ */
+    #gate-panel h1 {
+      font-size: 1.35rem;
+    }
+
+    .gate-question strong {
+      background: rgba(255,255,255,0.12);
+      border-radius: 3px;
+      padding: 1px 6px;
+      letter-spacing: 0.06em;
+    }
+
+    .honeypot {
+      position: absolute;
+      left: -10000px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    @media (max-width: 480px) {
+      .panel {
+        padding: 24px 18px;
+      }
+
+      h1 {
+        font-size: 1.35rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- ELW-Gate -->
+  <section id="gate-panel" class="panel" aria-label="Zugangsprüfung">
+    <div class="brand">
+      <div class="brand-icon" aria-hidden="true">
+        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="32" cy="32" r="8" fill="#69727A"/>
+          <circle cx="32" cy="32" r="4" fill="#525B63"/>
+          <path d="M19 18C12.5 24.5 12.5 39.5 19 46" stroke="#525B63" stroke-width="5" stroke-linecap="round"/>
+          <path d="M45 18C51.5 24.5 51.5 39.5 45 46" stroke="#525B63" stroke-width="5" stroke-linecap="round"/>
+          <path d="M25 24C21.5 27.8 21.5 36.2 25 40" stroke="#69727A" stroke-width="5" stroke-linecap="round"/>
+          <path d="M39 24C42.5 27.8 42.5 36.2 39 40" stroke="#69727A" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <h1>Zugangsprüfung</h1>
+    <p class="subtitle">Bitte beantworte die folgende Frage, um das Meldeformular zu öffnen.</p>
+
+    <form id="gate-form" novalidate>
+      <div class="field">
+        <label for="gate-answer" id="gate-label">
+          Lade Sicherheitsfrage ...
+        </label>
+        <input
+          id="gate-answer"
+          name="answer"
+          type="text"
+          placeholder="Antwort eingeben ..."
+          autocomplete="off"
+          maxlength="80"
+          required
+        >
+      </div>
+      <div class="actions">
+        <button type="submit" id="gate-submit">Weiter</button>
+      </div>
+      <p class="status" id="gate-status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <!-- Meldeformular (zunächst versteckt) -->
+  <main id="report-panel" class="panel hidden" aria-label="Meldeformular">
+    <div class="brand">
+      <div class="brand-icon" aria-hidden="true">
+        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="32" cy="32" r="8" fill="#69727A"/>
+          <circle cx="32" cy="32" r="4" fill="#525B63"/>
+          <path d="M19 18C12.5 24.5 12.5 39.5 19 46" stroke="#525B63" stroke-width="5" stroke-linecap="round"/>
+          <path d="M45 18C51.5 24.5 51.5 39.5 45 46" stroke="#525B63" stroke-width="5" stroke-linecap="round"/>
+          <path d="M25 24C21.5 27.8 21.5 36.2 25 40" stroke="#69727A" stroke-width="5" stroke-linecap="round"/>
+          <path d="M39 24C42.5 27.8 42.5 36.2 39 40" stroke="#69727A" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <h1>Fehler- und Problemmeldung</h1>
+    <p class="subtitle">Bitte die wichtigsten Angaben eintragen. Die Meldung wird direkt an den hinterlegten Workflow übergeben.</p>
+
+    <form id="report-form" novalidate>
+      <div class="honeypot" aria-hidden="true">
+        <label for="company">Firma</label>
+        <input id="company" name="company" type="text" tabindex="-1" autocomplete="off">
+      </div>
+
+      <div class="field">
+        <label for="name">Name</label>
+        <input id="name" name="name" type="text" placeholder="Organisation / Benutzername" autocomplete="name" maxlength="120" required>
+      </div>
+
+      <div class="field">
+        <label for="district">Löschbezirk</label>
+        <select id="district" name="district" required>
+          <option value="">Bitte auswählen</option>
+          <option value="Löschbezirk 1">Löschbezirk 1</option>
+          <option value="Löschbezirk 2">Löschbezirk 2</option>
+          <option value="Löschbezirk 3">Löschbezirk 3</option>
+          <option value="Löschbezirk 4">Löschbezirk 4</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="category">Kategorie</label>
+        <select id="category" name="category" required>
+          <option value="">Bitte auswählen</option>
+          <option value="Zugang / Login">Zugang / Login</option>
+          <option value="Softwarefehler">Softwarefehler</option>
+          <option value="Datenproblem">Datenproblem</option>
+          <option value="Bedienung / Frage">Bedienung / Frage</option>
+          <option value="Sonstiges">Sonstiges</option>
+        </select>
+      </div>
+
+      <div class="field hidden" id="category-other-field">
+        <label for="category-other">Kategorie Sonstiges</label>
+        <input id="category-other" name="categoryOther" type="text" placeholder="Bitte Kategorie genauer beschreiben" maxlength="120">
+      </div>
+
+      <div class="field">
+        <label for="message">Beschreibung</label>
+        <textarea id="message" name="message" placeholder="Bitte Problem oder Fehler möglichst genau beschreiben." maxlength="5000" required></textarea>
+      </div>
+
+      <div class="actions">
+        <button type="submit" id="submit-button">Meldung absenden</button>
+      </div>
+
+      <p class="status" id="status" aria-live="polite"></p>
+      <p class="hint">Die Meldung wird serverseitig validiert und direkt an den Workflow weitergegeben. Zugangsdaten verbleiben stets im Backend.</p>
+    </form>
+  </main>
+
+  <script>
+    // -------------------------------------------------------------------
+    // Endpunkte
+    // -------------------------------------------------------------------
+    const GATE_CONFIG_URL = "/api/gate-config";
+    const GATE_URL        = "/api/gate";
+    const REPORT_URL      = "/api/problem-report";
+    const TOKEN_KEY       = "elw_session_token";
+
+    // -------------------------------------------------------------------
+    // DOM – Gate
+    // -------------------------------------------------------------------
+    const gatePanel  = document.getElementById("gate-panel");
+    const gateForm   = document.getElementById("gate-form");
+    const gateLabel  = document.getElementById("gate-label");
+    const gateAnswer = document.getElementById("gate-answer");
+    const gateSubmit = document.getElementById("gate-submit");
+    const gateStatus = document.getElementById("gate-status");
+
+    // -------------------------------------------------------------------
+    // DOM – Meldeformular
+    // -------------------------------------------------------------------
+    const reportPanel        = document.getElementById("report-panel");
+    const form               = document.getElementById("report-form");
+    const categorySelect     = document.getElementById("category");
+    const categoryOtherField = document.getElementById("category-other-field");
+    const categoryOtherInput = document.getElementById("category-other");
+    const honeypotInput      = document.getElementById("company");
+    const submitButton       = document.getElementById("submit-button");
+    const statusElement      = document.getElementById("status");
+
+    async function loadGateConfig() {
+      try {
+        const response = await fetch(GATE_CONFIG_URL, {
+          method: "GET",
+          headers: { "Accept": "application/json" }
+        });
+
+        if (!response.ok) {
+          throw new Error("HTTP " + response.status);
+        }
+
+        const data = await response.json();
+        gateLabel.textContent = data.question || data.label || "Antwort";
+
+        if (data.placeholder) {
+          gateAnswer.placeholder = data.placeholder;
+        }
+      } catch (error) {
+        console.error(error);
+        gateLabel.textContent = "Sicherheitsfrage konnte nicht geladen werden.";
+        gateSubmit.disabled = true;
+        setGateStatus("Die Sicherheitsfrage ist momentan nicht verfuegbar.", "error");
+      }
+    }
+
+    // -------------------------------------------------------------------
+    // Session-Token  (sessionStorage: kein persistenter Cookie,
+    //                 kein Tab-übergreifendes Sharing)
+    // -------------------------------------------------------------------
+    function getToken()     { return sessionStorage.getItem(TOKEN_KEY); }
+    function saveToken(tok) { sessionStorage.setItem(TOKEN_KEY, tok); }
+    function clearToken()   { sessionStorage.removeItem(TOKEN_KEY); }
+
+    function showForm() {
+      gatePanel.classList.add("hidden");
+      reportPanel.classList.remove("hidden");
+    }
+
+    function showGate(msg) {
+      reportPanel.classList.add("hidden");
+      gatePanel.classList.remove("hidden");
+      if (msg) {
+        gateStatus.textContent   = msg;
+        gateStatus.dataset.state = "error";
+      }
+    }
+
+    // Beim Laden prüfen ob noch ein Token aus dieser Browser-Sitzung vorliegt
+    if (getToken()) { showForm(); }
+
+    loadGateConfig();
+
+    // -------------------------------------------------------------------
+    // Gate absenden
+    // -------------------------------------------------------------------
+    function setGateStatus(msg, state) {
+      gateStatus.textContent   = msg;
+      gateStatus.dataset.state = state || "";
+    }
+
+    gateForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      setGateStatus("");
+
+      const answer = gateAnswer.value.trim();
+      if (!answer) {
+        setGateStatus("Bitte eine Antwort eingeben.", "error");
+        return;
+      }
+
+      gateSubmit.disabled    = true;
+      gateSubmit.textContent = "Pruefe ...";
+
+      try {
+        const response = await fetch(GATE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ answer })
+        });
+
+        if (response.status === 429) {
+          setGateStatus("Zu viele Versuche - bitte kurz warten.", "error");
+          return;
+        }
+
+        if (!response.ok) {
+          // 403 = falsche Antwort; alle anderen = Serverfehler
+          setGateStatus("Antwort nicht korrekt. Bitte erneut versuchen.", "error");
+          return;
+        }
+
+        const data = await response.json();
+        saveToken(data.token);
+        gateAnswer.value = "";
+        showForm();
+      } catch {
+        setGateStatus("Verbindungsfehler - bitte erneut versuchen.", "error");
+      } finally {
+        gateSubmit.disabled    = false;
+        gateSubmit.textContent = "Weiter";
+      }
+    });
+
+    // -------------------------------------------------------------------
+    // Meldeformular
+    // -------------------------------------------------------------------
+    function setStatus(msg, state) {
+      statusElement.textContent   = msg;
+      statusElement.dataset.state = state || "";
+    }
+
+    function toggleCategoryOther() {
+      const needsOther = categorySelect.value === "Sonstiges";
+      categoryOtherField.classList.toggle("hidden", !needsOther);
+      categoryOtherInput.required = needsOther;
+      if (!needsOther) categoryOtherInput.value = "";
+    }
+
+    function buildPayload(formData) {
+      return {
+        report: {
+          name:          formData.get("name").trim(),
+          district:      formData.get("district"),
+          category:      formData.get("category"),
+          categoryOther: formData.get("categoryOther").trim(),
+          message:       formData.get("message").trim(),
+          company:       honeypotInput.value.trim()
+        },
+        meta: {
+          submittedAtClient: new Date().toISOString(),
+          pageUrl:           window.location.href,
+          userAgent:         navigator.userAgent
+        }
+      };
+    }
+
+    categorySelect.addEventListener("change", toggleCategoryOther);
+    toggleCategoryOther();
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      setStatus("");
+
+      if (!form.reportValidity()) {
+        setStatus("Bitte alle Pflichtfelder korrekt ausfüllen.", "error");
+        return;
+      }
+
+      if (honeypotInput.value.trim() !== "") {
+        setStatus("Absenden nicht möglich.", "error");
+        return;
+      }
+
+      const token = getToken();
+      if (!token) {
+        clearToken();
+        showGate("Sitzung abgelaufen - bitte erneut bestaetigen.");
+        return;
+      }
+
+      submitButton.disabled    = true;
+      submitButton.textContent = "Wird gesendet ...";
+
+      try {
+        const response = await fetch(REPORT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type":    "application/json",
+            "X-Session-Token": token
+          },
+          body: JSON.stringify(buildPayload(new FormData(form)))
+        });
+
+        if (response.status === 401) {
+          clearToken();
+          showGate("Sitzung abgelaufen - bitte erneut bestaetigen.");
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error("HTTP " + response.status);
+        }
+
+        form.reset();
+        toggleCategoryOther();
+        setStatus("Die Meldung wurde erfolgreich übermittelt.", "success");
+      } catch (error) {
+        console.error(error);
+        setStatus("Die Meldung konnte nicht gesendet werden - bitte spaeter erneut versuchen.", "error");
+      } finally {
+        submitButton.disabled    = false;
+        submitButton.textContent = "Meldung absenden";
+      }
+    });
+  </script>
+</body>
+</html>
