@@ -54,27 +54,39 @@
       display: grid;
       place-items: center;
       margin-bottom: 22px;
+      gap: 10px;
     }
 
-    .brand-icon {
-      width: 84px;
-      height: 84px;
-      border-radius: 50%;
-      background: #f5f5f5;
-      box-shadow: inset 0 -6px 12px rgba(0, 0, 0, 0.08);
-      display: grid;
-      place-items: center;
+    .brand-name {
+      margin: 0;
+      color: #d63b32;
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-align: center;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
     }
 
-    .brand-icon svg {
-      width: 54px;
-      height: 54px;
+    .brand-logo {
+      width: min(100%, 150px);
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.18));
     }
 
     h1 {
       margin: 14px 0 6px;
       text-align: center;
       font-size: 1.55rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    h2 {
+      margin: 14px 0 6px;
+      text-align: center;
+      font-size: 1.2rem;
       font-weight: 700;
       letter-spacing: 0.02em;
     }
@@ -189,6 +201,14 @@
       color: var(--muted);
       font-size: 0.84rem;
       line-height: 1.45;
+      text-align: center;
+    }
+
+    .field-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.4;
     }
 
     /* ------------------------------------------------------------------ */
@@ -227,16 +247,8 @@
   <!-- ELW-Gate -->
   <section id="gate-panel" class="panel" aria-label="Zugangsprüfung">
     <div class="brand">
-      <div class="brand-icon" aria-hidden="true">
-        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="32" cy="32" r="8" fill="#69727A"/>
-          <circle cx="32" cy="32" r="4" fill="#525B63"/>
-          <path d="M19 18C12.5 24.5 12.5 39.5 19 46" stroke="#525B63" stroke-width="5" stroke-linecap="round"/>
-          <path d="M45 18C51.5 24.5 51.5 39.5 45 46" stroke="#525B63" stroke-width="5" stroke-linecap="round"/>
-          <path d="M25 24C21.5 27.8 21.5 36.2 25 40" stroke="#69727A" stroke-width="5" stroke-linecap="round"/>
-          <path d="M39 24C42.5 27.8 42.5 36.2 39 40" stroke="#69727A" stroke-width="5" stroke-linecap="round"/>
-        </svg>
-      </div>
+      <p class="brand-name">Feuerwehr Blieskastel</p>
+      <img class="brand-logo" src="/assets/wappen.png" alt="Wappen der Feuerwehr Blieskastel">
     </div>
 
     <h1>Zugangsprüfung</h1>
@@ -267,20 +279,12 @@
   <!-- Meldeformular (zunächst versteckt) -->
   <main id="report-panel" class="panel hidden" aria-label="Meldeformular">
     <div class="brand">
-      <div class="brand-icon" aria-hidden="true">
-        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="32" cy="32" r="8" fill="#69727A"/>
-          <circle cx="32" cy="32" r="4" fill="#525B63"/>
-          <path d="M19 18C12.5 24.5 12.5 39.5 19 46" stroke="#525B63" stroke-width="5" stroke-linecap="round"/>
-          <path d="M45 18C51.5 24.5 51.5 39.5 45 46" stroke="#525B63" stroke-width="5" stroke-linecap="round"/>
-          <path d="M25 24C21.5 27.8 21.5 36.2 25 40" stroke="#69727A" stroke-width="5" stroke-linecap="round"/>
-          <path d="M39 24C42.5 27.8 42.5 36.2 39 40" stroke="#69727A" stroke-width="5" stroke-linecap="round"/>
-        </svg>
-      </div>
+      <p class="brand-name">Feuerwehr Blieskastel</p>
+      <img class="brand-logo" src="/assets/wappen.png" alt="Wappen der Feuerwehr Blieskastel">
     </div>
 
-    <h1>Fehler- und Problemmeldung</h1>
-    <p class="subtitle">Bitte die wichtigsten Angaben eintragen. Die Meldung wird direkt an den hinterlegten Workflow übergeben.</p>
+    <h1>Alamos Meldeformular</h1>
+    <p class="subtitle">Fülle die Felder bestmöglich aus, so können wir dir besser und schneller helfen</p>
 
     <form id="report-form" novalidate>
       <div class="honeypot" aria-hidden="true">
@@ -290,28 +294,52 @@
 
       <div class="field">
         <label for="name">Name</label>
-        <input id="name" name="name" type="text" placeholder="Organisation / Benutzername" autocomplete="name" maxlength="120" required>
+        <input id="name" name="name" type="text" placeholder="Name" autocomplete="name" maxlength="120" required>
+      </div>
+
+      <div class="field">
+        <label for="contact-email">Kontakt E-Mail</label>
+        <input
+          id="contact-email"
+          name="contactEmail"
+          type="email"
+          placeholder="name@example.de"
+          autocomplete="email"
+          maxlength="160"
+          required
+        >
+        <p class="field-note">Für weitere Fragen und Rückmeldungen.</p>
       </div>
 
       <div class="field">
         <label for="district">Löschbezirk</label>
         <select id="district" name="district" required>
           <option value="">Bitte auswählen</option>
-          <option value="Löschbezirk 1">Löschbezirk 1</option>
-          <option value="Löschbezirk 2">Löschbezirk 2</option>
-          <option value="Löschbezirk 3">Löschbezirk 3</option>
-          <option value="Löschbezirk 4">Löschbezirk 4</option>
+          <option value="Löschbezirk 1">LB1 (Mitte)</option>
+          <option value="Löschbezirk 2">LB3 (Aßweiler)</option>
+          <option value="Löschbezirk 3">LB4 (Ballweiler)</option>
+          <option value="Löschbezirk 4">LB5 (Bierbach)</option>
+          <option value="Löschbezirk 3">LB6 (Biesingen)</option>
+          <option value="Löschbezirk 4">LB7 (Blickweiler)</option>
+          <option value="Löschbezirk 3">LB8 (Böckweiler)</option>
+          <option value="Löschbezirk 4">LB9 (Breitfurt)</option>
+          <option value="Löschbezirk 4">LB10 (Brenschelbach)</option>
+          <option value="Löschbezirk 4">LB11 (Mimbach)</option>
+          <option value="Löschbezirk 4">LB12 (Pinningen)</option>
+          <option value="Löschbezirk 4">LB13 (Niederwürzbach)</option>
+          <option value="Löschbezirk 4">LB14 (Webenheim)</option>
+          <option value="Löschbezirk 4">LB15 (Wolfersheim)</option>
         </select>
       </div>
 
       <div class="field">
-        <label for="category">Kategorie</label>
+        <label for="category">Problem Kategorie</label>
         <select id="category" name="category" required>
           <option value="">Bitte auswählen</option>
-          <option value="Zugang / Login">Zugang / Login</option>
-          <option value="Softwarefehler">Softwarefehler</option>
-          <option value="Datenproblem">Datenproblem</option>
-          <option value="Bedienung / Frage">Bedienung / Frage</option>
+          <option value="Zugang / Login">Login</option>
+          <option value="Softwarefehler">Alarmgruppen</option>
+          <option value="Datenproblem">Alarmierung</option>
+          <option value="Bedienung / Frage">aPager</option>
           <option value="Sonstiges">Sonstiges</option>
         </select>
       </div>
@@ -327,11 +355,10 @@
       </div>
 
       <div class="actions">
-        <button type="submit" id="submit-button">Meldung absenden</button>
+        <button type="submit" id="submit-button">Absenden</button>
       </div>
-
+      <p class="hint">Die Meldung wird zeitnah von uns bearbeitet.</p>
       <p class="status" id="status" aria-live="polite"></p>
-      <p class="hint">Die Meldung wird serverseitig validiert und direkt an den Workflow weitergegeben. Zugangsdaten verbleiben stets im Backend.</p>
     </form>
   </main>
 
@@ -387,7 +414,7 @@
         console.error(error);
         gateLabel.textContent = "Sicherheitsfrage konnte nicht geladen werden.";
         gateSubmit.disabled = true;
-        setGateStatus("Die Sicherheitsfrage ist momentan nicht verfuegbar.", "error");
+        setGateStatus("Die Sicherheitsfrage ist momentan nicht verfügbar.", "error");
       }
     }
 
@@ -426,6 +453,23 @@
       gateStatus.dataset.state = state || "";
     }
 
+    function mapGateError(errorCode) {
+      switch (errorCode) {
+        case "answer_required":
+          return "Bitte eine Antwort eingeben.";
+        case "answer_wrong":
+          return "Antwort nicht korrekt. Bitte erneut versuchen.";
+        case "proxy_secret_invalid":
+          return "Der Zugriff wird gerade durch die Proxy-Schutzfunktion blockiert.";
+        case "proxy_secret_required":
+          return "Das Formular ist aktuell nicht korrekt ueber den Proxy abgesichert.";
+        case "rate_limited":
+          return "Zu viele Versuche - bitte kurz warten.";
+        default:
+          return "Prüfung fehlgeschlagen. Bitte erneut versuchen.";
+      }
+    }
+
     gateForm.addEventListener("submit", async function (event) {
       event.preventDefault();
       setGateStatus("");
@@ -437,7 +481,7 @@
       }
 
       gateSubmit.disabled    = true;
-      gateSubmit.textContent = "Pruefe ...";
+      gateSubmit.textContent = "Prüfe ...";
 
       try {
         const response = await fetch(GATE_URL, {
@@ -446,14 +490,17 @@
           body: JSON.stringify({ answer })
         });
 
-        if (response.status === 429) {
-          setGateStatus("Zu viele Versuche - bitte kurz warten.", "error");
-          return;
-        }
-
         if (!response.ok) {
-          // 403 = falsche Antwort; alle anderen = Serverfehler
-          setGateStatus("Antwort nicht korrekt. Bitte erneut versuchen.", "error");
+          let errorCode = "";
+
+          try {
+            const errorData = await response.json();
+            errorCode = errorData && typeof errorData.error === "string" ? errorData.error : "";
+          } catch (error) {
+            console.error(error);
+          }
+
+          setGateStatus(mapGateError(errorCode), "error");
           return;
         }
 
@@ -487,12 +534,13 @@
     function buildPayload(formData) {
       return {
         report: {
-          name:          formData.get("name").trim(),
-          district:      formData.get("district"),
-          category:      formData.get("category"),
+          name:         formData.get("name").trim(),
+          contactEmail: formData.get("contactEmail").trim(),
+          district:     formData.get("district"),
+          category:     formData.get("category"),
           categoryOther: formData.get("categoryOther").trim(),
-          message:       formData.get("message").trim(),
-          company:       honeypotInput.value.trim()
+          message:      formData.get("message").trim(),
+          company:      honeypotInput.value.trim()
         },
         meta: {
           submittedAtClient: new Date().toISOString(),
@@ -522,7 +570,7 @@
       const token = getToken();
       if (!token) {
         clearToken();
-        showGate("Sitzung abgelaufen - bitte erneut bestaetigen.");
+        showGate("Sitzung abgelaufen - bitte erneut bestätigen.");
         return;
       }
 
@@ -541,7 +589,7 @@
 
         if (response.status === 401) {
           clearToken();
-          showGate("Sitzung abgelaufen - bitte erneut bestaetigen.");
+          showGate("Sitzung abgelaufen - bitte erneut bestätigen.");
           return;
         }
 
@@ -554,7 +602,7 @@
         setStatus("Die Meldung wurde erfolgreich übermittelt.", "success");
       } catch (error) {
         console.error(error);
-        setStatus("Die Meldung konnte nicht gesendet werden - bitte spaeter erneut versuchen.", "error");
+        setStatus("Die Meldung konnte nicht gesendet werden - bitte später erneut versuchen.", "error");
       } finally {
         submitButton.disabled    = false;
         submitButton.textContent = "Meldung absenden";

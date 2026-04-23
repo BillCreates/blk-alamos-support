@@ -37,6 +37,7 @@ Sicherheitsrelevante Werte werden ueber Umgebungsvariablen gesteuert:
 
 - `GATE_EXPECTED_ANSWER` oder `GATE_ANSWER_HASH`
 - `PROXY_SHARED_SECRET`
+- `ALLOW_DIRECT_POST_ACCESS`
 - `N8N_WEBHOOK_URL`
 - `N8N_WEBHOOK_SECRET`
 - `ALLOWED_ORIGINS`
@@ -62,7 +63,7 @@ Wenn du die Antwort nicht im Klartext in der Umgebung haben willst, kannst du st
 - `GET /`
   Formularseite
 - `GET /health`
-  Healthcheck fuer Docker
+  Healthcheck fuer Docker, nur fuer interne Requests
 - `GET /api/gate-config`
   Liefert den sichtbaren Text der Sicherheitsfrage an das Frontend
 - `POST /api/gate`
@@ -114,6 +115,7 @@ Die ausfuehrliche Vorlage liegt in [docs/n8n-workflow.md](/Users/niklasbaldauf/d
 
 1. `backend/.env.example` nach `backend/.env` kopieren
 2. Werte anpassen
+3. fuer lokale Direktaufrufe ohne Reverse Proxy `ALLOW_DIRECT_POST_ACCESS=1` gesetzt lassen
 3. starten:
 
 ```bash
@@ -136,9 +138,10 @@ Empfohlener Betrieb:
 
 - Reverse Proxy vor den Container
 - HTTPS erzwingen
-- optional `X-Proxy-Shared-Secret` am Proxy setzen
+- `X-Proxy-Shared-Secret` am Proxy setzen
 - `N8N_WEBHOOK_URL` auf deine bestehende `n8n`-Instanz zeigen lassen
 - Container und `n8n` wenn moeglich im selben Docker-Netz betreiben
+- Host-Port in Produktion nur oeffnen, wenn der Proxy den Container nicht direkt im Docker-Netz erreicht
 
 Die konkrete Unraid-Vorlage liegt in [docs/unraid-deployment.md](/Users/niklasbaldauf/development/Meldungs%20Formular/docs/unraid-deployment.md:1).
 

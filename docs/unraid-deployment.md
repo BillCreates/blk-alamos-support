@@ -19,7 +19,8 @@ Empfohlener Aufbau:
 - Network Type: `bridge` oder ein eigenes Custom-Netz
 - Port Mapping:
   - Container Port `8080`
-  - Host Port z.B. `8080`
+  - Host Port nur dann setzen, wenn dein Reverse Proxy nicht direkt im selben Docker-Netz auf den Container zugreifen kann
+  - wenn moeglich kein oeffentliches Host-Port-Mapping verwenden
 - Restart Policy: `unless-stopped`
 - Optionaler Volume-Mount fuer Env-Datei:
   - Host Path z.B. `/mnt/user/appdata/problem-report/problem-report.env`
@@ -109,6 +110,13 @@ Wenn du Nginx Proxy Manager oder SWAG davor nutzt:
 - optional Rate-Limit auch am Proxy setzen
 - `X-Proxy-Shared-Secret` serverseitig mitschicken
 
+Wichtig:
+
+- `ALLOW_DIRECT_POST_ACCESS` in Produktion nicht setzen
+- `/health` nicht ueber den Reverse Proxy veroeffentlichen
+- `PROXY_SHARED_SECRET` muss im Proxy und im Container identisch gesetzt sein
+- `ALLOWED_ORIGINS` ist nur Browser-Schutz und ersetzt nicht den Proxy-Schutz
+
 Beispiel fuer den zusaetzlichen Header:
 
 ```nginx
@@ -171,17 +179,29 @@ Der Container nutzt:
 
 - `GET /health`
 
-Wenn du auf Unraid eigene Checks hinterlegen willst, ist das die richtige URL.
+Wenn du auf Unraid eigene Checks hinterlegen willst, ist das die richtige URL. Der Endpoint ist fuer interne Requests gedacht und sollte nicht oeffentlich veroeffentlicht werden.
 
 ## Starttest nach Deployment
 
 1. Container starten
-2. `http://UNRAID-IP:8080/health` pruefen
+2. internen Healthcheck pruefen, z. B. direkt vom Unraid-Host oder aus dem internen Netz
 3. Formular aufrufen
 4. Sicherheitsfrage testen
 5. Testmeldung absenden
 6. in `n8n` den Webhook-Eingang pruefen
 7. Jira-Ticket und Slack-Nachricht kontrollieren
+
+## Go-Live-Checkliste
+
+Vor dem oeffentlichen Einsatz sollte folgendes erfuellt sein:
+
+- `PROXY_SHARED_SECRET` gesetzt
+- `ALLOW_DIRECT_POST_ACCESS` nicht gesetzt
+- `ALLOWED_ORIGINS` auf die echte Formular-Domain gesetzt
+- `/health` nicht am Reverse Proxy freigegeben
+- Reverse Proxy setzt `X-Proxy-Shared-Secret`
+- HTTPS aktiv
+- optional zusaetzliches Rate-Limit oder Bot-Schutz am Proxy
 
 ## Empfehlung fuer Produktion
 

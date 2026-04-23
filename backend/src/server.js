@@ -107,6 +107,7 @@ function sha256Hex(value) {
 const config = {
   port: toInt(process.env.PORT, 8080),
   trustProxy: toBool(process.env.TRUST_PROXY, true),
+  allowDirectPostAccess: toBool(process.env.ALLOW_DIRECT_POST_ACCESS, false),
   allowedOrigins: splitList(process.env.ALLOWED_ORIGINS, []),
   proxySharedSecret: process.env.PROXY_SHARED_SECRET || "",
   n8nWebhookUrl: process.env.N8N_WEBHOOK_URL || "",
@@ -134,7 +135,8 @@ const config = {
   rateLimitMaxRequests: toInt(process.env.RATE_LIMIT_MAX_REQUESTS, 10),
   rateLimitGateWindowMs: toInt(process.env.RATE_LIMIT_GATE_WINDOW_MS, 10 * 60 * 1000),
   rateLimitGateMaxRequests: toInt(process.env.RATE_LIMIT_GATE_MAX_REQUESTS, 10),
-  jsonLimit: process.env.JSON_LIMIT || "20kb"
+  jsonLimit: process.env.JSON_LIMIT || "20kb",
+  monitoringTimezone: "Europe/Berlin"
 };
 
 const requiredEnvNames = [];
@@ -151,6 +153,10 @@ if (!gateAnswerHash) {
   requiredEnvNames.push("GATE_EXPECTED_ANSWER oder GATE_ANSWER_HASH");
 }
 
+if (!config.proxySharedSecret && !config.allowDirectPostAccess) {
+  requiredEnvNames.push("PROXY_SHARED_SECRET oder ALLOW_DIRECT_POST_ACCESS=1");
+}
+
 const missingEnv = requiredEnvNames;
 if (missingEnv.length > 0) {
   console.error("Fehlende Umgebungsvariablen:", missingEnv.join(", "));
@@ -163,6 +169,15 @@ const sessionStore = new Map();
 const app = express();
 const rateLimitStore = new Map();
 const rateLimitGateStore = new Map();
+const startedAt = new Date();
+
+const monitoringState = {
+  lastN8nSuccessAt: null,
+  lastN8nFailureAt: null,
+  lastN8nFailureReason: "",
+  today: null,
+  counters: null
+};
 
 if (config.trustProxy) {
   app.set("trust proxy", true);
@@ -176,6 +191,10 @@ app.use((req, res, next) => {
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("Referrer-Policy", "no-referrer");
   res.setHeader("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+  res.setHeader(
+    "Content-Security-Policy",
+    "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
+  );
   next();
 });
 
@@ -210,7 +229,11 @@ app.use((req, res, next) => {
   }
 
   if (!config.proxySharedSecret) {
-    return next();
+    if (config.allowDirectPostAccess) {
+      return next();
+    }
+
+    return res.status(503).json({ ok: false, error: "proxy_secret_required" });
   }
 
   const headerValue = req.get("x-proxy-shared-secret");
@@ -220,6 +243,49 @@ app.use((req, res, next) => {
 
   next();
 });
+
+function normalizeRemoteAddress(value) {
+  if (!value) {
+    return "";
+  }
+
+  if (value.startsWith("::ffff:")) {
+    return value.slice(7);
+  }
+
+  return value;
+}
+
+function isInternalRequest(req) {
+  const ip = normalizeRemoteAddress(req.ip || req.socket.remoteAddress || "");
+
+  if (!ip) {
+    return false;
+  }
+
+  if (ip === "::1" || ip === "127.0.0.1" || ip === "localhost") {
+    return true;
+  }
+
+  if (ip.startsWith("10.") || ip.startsWith("192.168.")) {
+    return true;
+  }
+
+  const ipv4Parts = ip.split(".");
+  if (ipv4Parts.length === 4) {
+    const first = Number.parseInt(ipv4Parts[0], 10);
+    const second = Number.parseInt(ipv4Parts[1], 10);
+    if (first === 172 && second >= 16 && second <= 31) {
+      return true;
+    }
+  }
+
+  if (ip.startsWith("fc") || ip.startsWith("fd")) {
+    return true;
+  }
+
+  return false;
+}
 
 function checkRateLimit(store, windowMs, maxRequests, ip) {
   const now = Date.now();
@@ -232,6 +298,107 @@ function checkRateLimit(store, windowMs, maxRequests, ip) {
 
   entry.count += 1;
   return entry.count <= maxRequests;
+}
+
+function getTodayKey(date = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: config.monitoringTimezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(date);
+}
+
+function createEmptyDailyCounters() {
+  return {
+    gateSuccess: 0,
+    gateFailure: 0,
+    reportSuccess: 0,
+    reportFailure: 0,
+    reportValidationFailure: 0,
+    reportWebhookFailure: 0
+  };
+}
+
+function ensureDailyCounters() {
+  const today = getTodayKey();
+  if (monitoringState.today !== today || !monitoringState.counters) {
+    monitoringState.today = today;
+    monitoringState.counters = createEmptyDailyCounters();
+  }
+
+  return monitoringState.counters;
+}
+
+function incrementCounter(counterName) {
+  const counters = ensureDailyCounters();
+  if (Object.hasOwn(counters, counterName)) {
+    counters[counterName] += 1;
+  }
+}
+
+function markN8nSuccess() {
+  monitoringState.lastN8nSuccessAt = new Date().toISOString();
+  monitoringState.lastN8nFailureAt = null;
+  monitoringState.lastN8nFailureReason = "";
+}
+
+function markN8nFailure(reason) {
+  monitoringState.lastN8nFailureAt = new Date().toISOString();
+  monitoringState.lastN8nFailureReason = String(reason || "unknown_n8n_failure");
+}
+
+function buildHealthSnapshot() {
+  const counters = ensureDailyCounters();
+  const uptimeSeconds = Math.floor(process.uptime());
+  const reasons = [];
+  const services = {
+    backend: {
+      ok: true
+    },
+    n8nWebhook: {
+      ok: !monitoringState.lastN8nFailureAt,
+      lastSuccessAt: monitoringState.lastN8nSuccessAt,
+      lastFailureAt: monitoringState.lastN8nFailureAt,
+      lastFailureReason: monitoringState.lastN8nFailureReason || null
+    }
+  };
+
+  if (!services.n8nWebhook.ok) {
+    reasons.push("n8n_webhook_unavailable");
+  }
+
+  return {
+    ok: reasons.length === 0,
+    status: reasons.length === 0 ? "ok" : "degraded",
+    reasons,
+    service: {
+      name: "problem-report-backend",
+      startedAt: startedAt.toISOString(),
+      uptimeSeconds
+    },
+    services,
+    metrics: {
+      timezone: config.monitoringTimezone,
+      date: monitoringState.today,
+      runtime: {
+        seconds: uptimeSeconds,
+        startedAt: startedAt.toISOString()
+      },
+      today: {
+        gate: {
+          success: counters.gateSuccess,
+          failure: counters.gateFailure
+        },
+        reports: {
+          success: counters.reportSuccess,
+          failure: counters.reportFailure,
+          validationFailure: counters.reportValidationFailure,
+          webhookFailure: counters.reportWebhookFailure
+        }
+      }
+    }
+  };
 }
 
 app.use((req, res, next) => {
@@ -279,6 +446,17 @@ function requireString(value, fieldName, maxLength) {
   return normalized;
 }
 
+function requireEmail(value, fieldName, maxLength) {
+  const normalized = requireString(value, fieldName, maxLength);
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailPattern.test(normalized)) {
+    throw new ValidationError(fieldName + "_invalid");
+  }
+
+  return normalized;
+}
+
 // ---------------------------------------------------------------------------
 // Session-Hilfsfunktionen
 // ---------------------------------------------------------------------------
@@ -321,6 +499,7 @@ function normalizeReport(payload) {
   }
 
   const name = requireString(report.name, "name", 120);
+  const contactEmail = requireEmail(report.contactEmail, "contact_email", 160);
   const district = requireString(report.district, "district", 120);
   const category = requireString(report.category, "category", 120);
   const message = requireString(report.message, "message", 5000);
@@ -351,6 +530,7 @@ function normalizeReport(payload) {
   return {
     report: {
       name,
+      contactEmail,
       district,
       category,
       categoryOther,
@@ -376,6 +556,7 @@ function buildN8nPayload(reportEnvelope) {
     requestId,
     submittedAtUtc,
     name: report.name,
+    contactEmail: report.contactEmail,
     district: report.district,
     category: report.category,
     categoryOther: report.categoryOther || "",
@@ -394,7 +575,12 @@ app.get("/", (req, res) => {
 });
 
 app.get("/health", (req, res) => {
-  res.json({ ok: true });
+  if (!isInternalRequest(req)) {
+    return res.status(403).json({ ok: false, error: "health_not_public" });
+  }
+
+  const snapshot = buildHealthSnapshot();
+  res.status(snapshot.ok ? 200 : 503).json(snapshot);
 });
 
 app.get("/api/gate-config", (req, res) => {
@@ -415,6 +601,7 @@ app.post("/api/gate", (req, res) => {
   const answer = typeof body.answer === "string" ? body.answer.trim() : "";
 
   if (!answer) {
+    incrementCounter("gateFailure");
     return res.status(400).json({ ok: false, error: "answer_required" });
   }
 
@@ -423,11 +610,16 @@ app.post("/api/gate", (req, res) => {
   const hash = sha256Hex(normalized);
 
   if (hash !== gateAnswerHash) {
+    incrementCounter("gateFailure");
+    console.warn("[gate] wrong answer", {
+      ip: normalizeRemoteAddress(req.ip || req.socket.remoteAddress || "unknown")
+    });
     return res.status(403).json({ ok: false, error: "answer_wrong" });
   }
 
   const token = generateToken();
   sessionStore.set(token, { createdAt: Date.now() });
+  incrementCounter("gateSuccess");
 
   res.json({ ok: true, token });
 });
@@ -440,6 +632,7 @@ app.post("/api/problem-report", async (req, res) => {
     // Session-Token prüfen
     const authHeader = req.get("x-session-token") || "";
     if (!isValidToken(authHeader)) {
+      incrementCounter("reportFailure");
       return res.status(401).json({ ok: false, error: "session_invalid" });
     }
 
@@ -462,9 +655,16 @@ app.post("/api/problem-report", async (req, res) => {
     });
 
     if (!n8nResponse.ok) {
-      console.error("n8n Webhook Fehler:", n8nResponse.status, await n8nResponse.text().catch(() => ""));
+      const responseText = await n8nResponse.text().catch(() => "");
+      incrementCounter("reportFailure");
+      incrementCounter("reportWebhookFailure");
+      markN8nFailure("http_" + n8nResponse.status);
+      console.error("n8n Webhook Fehler:", n8nResponse.status, responseText);
       return res.status(502).json({ ok: false, error: "webhook_delivery_failed" });
     }
+
+    incrementCounter("reportSuccess");
+    markN8nSuccess();
 
     res.status(202).json({
       ok: true,
@@ -473,9 +673,14 @@ app.post("/api/problem-report", async (req, res) => {
     });
   } catch (error) {
     if (error instanceof ValidationError) {
+      incrementCounter("reportFailure");
+      incrementCounter("reportValidationFailure");
       return res.status(400).json({ ok: false, error: error.message });
     }
 
+    incrementCounter("reportFailure");
+    incrementCounter("reportWebhookFailure");
+    markN8nFailure(error && error.name ? error.name : "webhook_delivery_failed");
     console.error("Webhook-Weiterleitung fehlgeschlagen:", error);
     res.status(502).json({ ok: false, error: "webhook_delivery_failed" });
   }
