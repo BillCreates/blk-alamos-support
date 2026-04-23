@@ -22,6 +22,8 @@ Damit gibt es keine CORS-Probleme zwischen Formular und API, und alle sicherheit
   Beispiel fuer alle wichtigen Laufzeitvariablen
 - `docker-compose.yml`
   Startet nur das Formular-Backend
+- `.github/workflows/docker-publish.yml`
+  Baut bei Git-Tags wie `v1.0.0` automatisch ein privates Docker-Image in `ghcr.io`
 - `docs/n8n-workflow.md`
   Konkrete Vorlage fuer den n8n-Ablauf mit Jira und Slack
 - `docs/unraid-deployment.md`
@@ -139,6 +141,26 @@ Empfohlener Betrieb:
 - Container und `n8n` wenn moeglich im selben Docker-Netz betreiben
 
 Die konkrete Unraid-Vorlage liegt in [docs/unraid-deployment.md](/Users/niklasbaldauf/development/Meldungs%20Formular/docs/unraid-deployment.md:1).
+
+## GitHub und Docker-Image
+
+Das Repository kann privat bleiben. GitHub Actions baut das Container-Image automatisch, sobald du einen Git-Tag mit `v` pushst, zum Beispiel `v1.0.0`.
+
+Dabei entstehen zum Beispiel diese Tags:
+
+- `ghcr.io/billcreates/blk-alamos-support:v1.0.0`
+- `ghcr.io/billcreates/blk-alamos-support:latest`
+- `ghcr.io/billcreates/blk-alamos-support:sha-<commit>`
+
+Der Workflow liegt in [.github/workflows/docker-publish.yml](/Users/niklasbaldauf/development/Meldungs%20Formular/.github/workflows/docker-publish.yml:1).
+
+Wichtig fuer den ersten Lauf:
+
+- In GitHub unter dem Repo `Actions` aktivieren
+- einen Versions-Tag wie `v1.0.0` erstellen und pushen
+- danach erscheint das Package unter `Packages`
+
+Wenn das Image privat bleiben soll, ist das mit `ghcr.io` moeglich. Auf Unraid brauchst du dann GitHub-Zugangsdaten mit Paket-Leserechten.
 
 ## Hinweise zur Sicherheitsfrage
 

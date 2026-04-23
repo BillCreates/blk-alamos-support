@@ -4,6 +4,8 @@
 
 Dieser Container soll auf Unraid als einzelne App laufen und die bestehende `n8n`-Instanz ueber einen Webhook ansprechen.
 
+Wenn du das Projekt ueber GitHub bauen laesst, kannst du auf Unraid direkt das private Image aus `ghcr.io` nutzen statt lokal zu bauen. Der Build wird dabei ueber einen Git-Tag wie `v1.0.0` ausgeloest.
+
 Empfohlener Aufbau:
 
 - Reverse Proxy vor dem Formular
@@ -13,7 +15,7 @@ Empfohlener Aufbau:
 
 ## Empfohlene Container-Einstellungen
 
-- Repository: dein gebautes Image oder lokaler Build
+- Repository: `ghcr.io/billcreates/blk-alamos-support:latest` oder ein fester `sha-...` Tag
 - Network Type: `bridge` oder ein eigenes Custom-Netz
 - Port Mapping:
   - Container Port `8080`
@@ -35,6 +37,22 @@ In Unraid benoetigst du dann nur noch:
   - `ENV_FILE=/config/problem-report.env`
 
 Das Backend liest diese Datei beim Start ein. Direkt in Unraid gesetzte Umgebungsvariablen ueberschreiben Werte aus der Datei, falls du spaeter einzelne Werte gezielt uebersteuern willst.
+
+## Zugriff auf das private GitHub-Image
+
+Wenn das Image privat ist, muss Unraid sich an `ghcr.io` anmelden.
+
+Ueblicher Login:
+
+- Registry: `ghcr.io`
+- Username: dein GitHub-Username, hier z.B. `BillCreates`
+- Passwort: ein GitHub Personal Access Token
+
+Fuer das Token reicht in der Regel:
+
+- `read:packages`
+
+Falls du ein feineres Token-Modell nutzt, braucht der Unraid-Host nur Leserechte fuer das private Package.
 
 ## Empfohlene Umgebungsvariablen
 
