@@ -22,10 +22,10 @@ Das Backend sendet ein JSON in dieser Form:
   "requestId": "uuid",
   "submittedAtUtc": "2026-04-19T10:00:00.000Z",
   "name": "Max Mustermann",
-  "district": "Löschbezirk 1",
-  "category": "Softwarefehler",
+  "district": "LB1 (Mitte)",
+  "category": "Alarmierung",
   "categoryOther": "",
-  "categoryResolved": "Softwarefehler",
+  "categoryResolved": "Alarmierung",
   "message": "Beschreibung der Stoerung",
   "meta": {
     "pageUrl": "https://formular.example.de/",

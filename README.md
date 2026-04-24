@@ -50,6 +50,8 @@ Die Sicherheitsfrage ist vollstaendig austauschbar, ohne das Frontend oder Backe
 - `GATE_PLACEHOLDER`
 - `GATE_EXPECTED_ANSWER`
 
+Die Formularoptionen fuer Löschbezirk und Problem-Kategorie sind aktuell fest im Code definiert und werden nicht mehr ueber Umgebungsvariablen gesteuert.
+
 Zusätzlich kann der Container eine externe Env-Datei laden:
 
 - `ENV_FILE=/config/problem-report.env`
@@ -78,10 +80,10 @@ Wenn du die Antwort nicht im Klartext in der Umgebung haben willst, kannst du st
   "requestId": "uuid",
   "submittedAtUtc": "2026-04-19T10:00:00.000Z",
   "name": "Max Mustermann",
-  "district": "Löschbezirk 1",
-  "category": "Softwarefehler",
+  "district": "LB1 (Mitte)",
+  "category": "Alarmierung",
   "categoryOther": "",
-  "categoryResolved": "Softwarefehler",
+  "categoryResolved": "Alarmierung",
   "message": "Beschreibung der Stoerung",
   "meta": {
     "pageUrl": "https://formular.example.de/",
@@ -123,6 +125,23 @@ docker compose up -d --build
 ```
 
 Danach ist das Formular unter `http://localhost:8080/` erreichbar.
+
+## Docker Desktop auf Windows
+
+Fuer Docker Desktop auf Windows liegt eine produktionsartige Vorlage in [docs/problem-report.windows.production.env](/Users/niklasbaldauf/development/Meldungs%20Formular/docs/problem-report.windows.production.env:1) und eine eigene Compose-Datei in [docker-compose.windows.yml](/Users/niklasbaldauf/development/Meldungs%20Formular/docker-compose.windows.yml:1).
+
+Start unter Windows:
+
+1. Werte in `docs/problem-report.windows.production.env` anpassen
+2. Reverse Proxy vor den Container setzen und `X-Proxy-Shared-Secret` mitschicken
+3. `/health` nicht oeffentlich veroeffentlichen
+2. starten mit:
+
+```bash
+docker compose -f docker-compose.windows.yml up -d --build
+```
+
+Danach ist das Formular ueber die konfigurierte Domain am Reverse Proxy erreichbar.
 
 ## Unraid-Einsatz
 
@@ -179,8 +198,6 @@ Wenn du lieber einen Hash setzen willst, muss dieser auf genau der normalisierte
 
 ## Wichtige offene Anpassungen vor Produktion
 
-- echte Werte fuer `Löschbezirk`
-- echte Kategorien
 - echte `ALLOWED_ORIGINS`
 - echtes Reverse-Proxy-Setup
 - `n8n`-Workflow fuer Jira und Slack

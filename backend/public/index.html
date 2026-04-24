@@ -83,14 +83,6 @@
       letter-spacing: 0.02em;
     }
 
-    h2 {
-      margin: 14px 0 6px;
-      text-align: center;
-      font-size: 1.2rem;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-    }
-
     .subtitle {
       margin: 0 0 24px;
       text-align: center;
@@ -315,20 +307,20 @@
         <label for="district">Löschbezirk</label>
         <select id="district" name="district" required>
           <option value="">Bitte auswählen</option>
-          <option value="Löschbezirk 1">LB1 (Mitte)</option>
-          <option value="Löschbezirk 2">LB3 (Aßweiler)</option>
-          <option value="Löschbezirk 3">LB4 (Ballweiler)</option>
-          <option value="Löschbezirk 4">LB5 (Bierbach)</option>
-          <option value="Löschbezirk 3">LB6 (Biesingen)</option>
-          <option value="Löschbezirk 4">LB7 (Blickweiler)</option>
-          <option value="Löschbezirk 3">LB8 (Böckweiler)</option>
-          <option value="Löschbezirk 4">LB9 (Breitfurt)</option>
-          <option value="Löschbezirk 4">LB10 (Brenschelbach)</option>
-          <option value="Löschbezirk 4">LB11 (Mimbach)</option>
-          <option value="Löschbezirk 4">LB12 (Pinningen)</option>
-          <option value="Löschbezirk 4">LB13 (Niederwürzbach)</option>
-          <option value="Löschbezirk 4">LB14 (Webenheim)</option>
-          <option value="Löschbezirk 4">LB15 (Wolfersheim)</option>
+          <option value="LB1 (Mitte)">LB1 (Mitte)</option>
+          <option value="LB3 (Aßweiler)">LB3 (Aßweiler)</option>
+          <option value="LB4 (Ballweiler)">LB4 (Ballweiler)</option>
+          <option value="LB5 (Bierbach)">LB5 (Bierbach)</option>
+          <option value="LB6 (Biesingen)">LB6 (Biesingen)</option>
+          <option value="LB7 (Blickweiler)">LB7 (Blickweiler)</option>
+          <option value="LB8 (Böckweiler)">LB8 (Böckweiler)</option>
+          <option value="LB9 (Breitfurt)">LB9 (Breitfurt)</option>
+          <option value="LB10 (Brenschelbach)">LB10 (Brenschelbach)</option>
+          <option value="LB11 (Mimbach)">LB11 (Mimbach)</option>
+          <option value="LB12 (Pinningen)">LB12 (Pinningen)</option>
+          <option value="LB13 (Niederwürzbach)">LB13 (Niederwürzbach)</option>
+          <option value="LB14 (Webenheim)">LB14 (Webenheim)</option>
+          <option value="LB15 (Wolfersheim)">LB15 (Wolfersheim)</option>
         </select>
       </div>
 
@@ -336,10 +328,10 @@
         <label for="category">Problem Kategorie</label>
         <select id="category" name="category" required>
           <option value="">Bitte auswählen</option>
-          <option value="Zugang / Login">Login</option>
-          <option value="Softwarefehler">Alarmgruppen</option>
-          <option value="Datenproblem">Alarmierung</option>
-          <option value="Bedienung / Frage">aPager</option>
+          <option value="Login">Login</option>
+          <option value="Alarmgruppen">Alarmgruppen</option>
+          <option value="Alarmierung">Alarmierung</option>
+          <option value="aPager">aPager</option>
           <option value="Sonstiges">Sonstiges</option>
         </select>
       </div>
@@ -605,7 +597,7 @@
         setStatus("Die Meldung konnte nicht gesendet werden - bitte später erneut versuchen.", "error");
       } finally {
         submitButton.disabled    = false;
-        submitButton.textContent = "Meldung absenden";
+        submitButton.textContent = "Absenden";
       }
     });
   </script>

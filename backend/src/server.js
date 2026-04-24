@@ -118,19 +118,29 @@ const config = {
   gateExpectedAnswer: process.env.GATE_EXPECTED_ANSWER || "",
   gateAnswerHash: process.env.GATE_ANSWER_HASH || process.env.ELW_ANSWER_HASH || "",
   sessionTtlMs: toInt(process.env.SESSION_TTL_MS, 4 * 60 * 60 * 1000),
-  allowedDistricts: splitList(process.env.ALLOWED_DISTRICTS, [
-    "Löschbezirk 1",
-    "Löschbezirk 2",
-    "Löschbezirk 3",
-    "Löschbezirk 4"
-  ]),
-  allowedCategories: splitList(process.env.ALLOWED_CATEGORIES, [
-    "Zugang / Login",
-    "Softwarefehler",
-    "Datenproblem",
-    "Bedienung / Frage",
+  allowedDistricts: [
+    "LB1 (Mitte)",
+    "LB3 (Aßweiler)",
+    "LB4 (Ballweiler)",
+    "LB5 (Bierbach)",
+    "LB6 (Biesingen)",
+    "LB7 (Blickweiler)",
+    "LB8 (Böckweiler)",
+    "LB9 (Breitfurt)",
+    "LB10 (Brenschelbach)",
+    "LB11 (Mimbach)",
+    "LB12 (Pinningen)",
+    "LB13 (Niederwürzbach)",
+    "LB14 (Webenheim)",
+    "LB15 (Wolfersheim)"
+  ],
+  allowedCategories: [
+    "Login",
+    "Alarmgruppen",
+    "Alarmierung",
+    "aPager",
     "Sonstiges"
-  ]),
+  ],
   rateLimitWindowMs: toInt(process.env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
   rateLimitMaxRequests: toInt(process.env.RATE_LIMIT_MAX_REQUESTS, 10),
   rateLimitGateWindowMs: toInt(process.env.RATE_LIMIT_GATE_WINDOW_MS, 10 * 60 * 1000),
